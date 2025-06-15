@@ -1,0 +1,21 @@
+I will like to teach how to customized your ubuntu ip to name in the URL
+For example: http://192.168.*.*:8888 to http://gitlab.homeserver 
+
+this will redirect your port to nginx port 80 
+
+with the customized name its easy to remember your app rather than typing the server ip 
+
+i will be using docker compose 
+
+with this i will run the gitlab and nginx in dockerfile 
+
+you are free to copy this dockerfile and edit to your own. 
+
+start the docker file 
+
+docker-compose up -d 
+
+
+
+
+
