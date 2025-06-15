@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    hostname: 'gitlab.homeserver'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.homeserver'
+    ports:
+      - '8929:80'  # internal GitLab port to avoid conflicts
+      - '2224:22'  # for Git over SSH
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    restart: always
+    depends_on:
+      - gitlab
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/logs:/var/log/nginx
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+
+server {
+    listen 80;
+    server_name gitlab.homeserver;
+
+    location / {
+        proxy_pass http://gitlab:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
